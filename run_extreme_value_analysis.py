@@ -203,14 +203,6 @@ def run_eva(df, tag, block_size=pd.Timedelta(pd.to_timedelta("365.2425D")),
     t=ax_model[1,1].text(0.06,0.94,'(d)', transform=ax_model[1,1].transAxes, fontsize=csize, va='top', ha='left')
     t.set_bbox(dict(facecolor='white', alpha=0.5, edgecolor='grey'))
     
-    
-    #opng=r'Users\admin\Documents\figures\sc_magnetometer_study\sw_params_extremes\extreme_value_analysis_'+str(tag)+'.png'
-    #opng=os.path.join('C:'+os.sep,opng)
-    #fig.savefig(opng)
-
-    ## Save return values to file
-    #ocsv=r'Users\admin\Documents\figures\sc_magnetometer_study\dbdt_npys\return_values_'+str(tag)+'.csv'
-    #ocsv=os.path.join('C:'+os.sep,ocsv)
-    #summary.to_csv(ocsv, index=False) 
+    plt.show()
     
     return gevd_fit_params, extremes_df, fig_extremes, ax_extremes, fig_model, ax_model, summary
