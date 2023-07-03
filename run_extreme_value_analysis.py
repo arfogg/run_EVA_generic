@@ -37,6 +37,7 @@ def run_eva(df, tag, block_size=pd.Timedelta(pd.to_timedelta("365.2425D")),
     summary - df of return values and their probabilities
     """
     
+    
     extremes_type='low' if minima==True else 'high'
 
     # Initialise model
@@ -50,6 +51,33 @@ def run_eva(df, tag, block_size=pd.Timedelta(pd.to_timedelta("365.2425D")),
     
     if eva_model.distribution.name == 'gumbel_r':
         gevd_fit_params['shape_']=0.0
+        location_quantiles=np.quantile(eva_model.model.trace[:,:,0].flatten(), [0.025, 0.975])
+        scale_quantiles=np.quantile(eva_model.model.trace[:,:,1].flatten(), [0.025, 0.975])
+        
+        gevd_fit_params['shape_lower_ci_width']=np.nan
+        gevd_fit_params['shape_upper_ci_width']=np.nan
+        
+        gevd_fit_params['location_lower_ci_width']=gevd_fit_params.location-location_quantiles[0]
+        gevd_fit_params['location_upper_ci_width']=location_quantiles[1]-gevd_fit_params.location
+        
+        gevd_fit_params['scale_lower_ci_width']=gevd_fit_params.scale-scale_quantiles[0]
+        gevd_fit_params['scale_upper_ci_width']=scale_quantiles[1]-gevd_fit_params.scale
+
+    else:
+        # Calculate the 95% confidence intervals on fit params
+        shape_quantiles=np.quantile(eva_model.model.trace[:,:,0].flatten(), [0.025, 0.975])
+        location_quantiles=np.quantile(eva_model.model.trace[:,:,1].flatten(), [0.025, 0.975])
+        scale_quantiles=np.quantile(eva_model.model.trace[:,:,2].flatten(), [0.025, 0.975])
+        
+        gevd_fit_params['shape_lower_ci_width']=gevd_fit_params.shape_-shape_quantiles[0]
+        gevd_fit_params['shape_upper_ci_width']=shape_quantiles[1]-gevd_fit_params.shape_
+        
+        gevd_fit_params['location_lower_ci_width']=gevd_fit_params.location-location_quantiles[0]
+        gevd_fit_params['location_upper_ci_width']=location_quantiles[1]-gevd_fit_params.location
+        
+        gevd_fit_params['scale_lower_ci_width']=gevd_fit_params.scale-scale_quantiles[0]
+        gevd_fit_params['scale_upper_ci_width']=scale_quantiles[1]-gevd_fit_params.scale
+    
     gevd_fit_params['distribution_name']= eva_model.distribution.name   
     
         
@@ -113,7 +141,8 @@ def run_eva(df, tag, block_size=pd.Timedelta(pd.to_timedelta("365.2425D")),
     t=ax_model[0,1].text(0.06,0.94,'(b)', transform=ax_model[0,1].transAxes, fontsize=csize, va='top', ha='left')
     t.set_bbox(dict(facecolor='white', alpha=0.5, edgecolor='grey'))
     
-    params_text=r'$\mu$ = '+str(float('%.4g' % gevd_fit_params.location))+'\n$\sigma$ = '+str(float('%.4g' % gevd_fit_params.scale))+'\n'+r'$\xi$ = '+str(float('%.4g' % gevd_fit_params.shape_))
+    #params_text=r'$\mu$ = '+str(float('%.4g' % gevd_fit_params.location))+'\n$\sigma$ = '+str(float('%.4g' % gevd_fit_params.scale))+'\n'+r'$\xi$ = '+str(float('%.4g' % gevd_fit_params.shape_))
+    params_text=r'$\mu$ = '+str(float('%.4g' % gevd_fit_params.location)) + ' (-' +str(float('%.4g' % gevd_fit_params.location_lower_ci_width)) +', +'+ str(float('%.4g' % gevd_fit_params.location_upper_ci_width)) +')'+'\n$\sigma$ = '+str(float('%.4g' % gevd_fit_params.scale)) + ' (-' +str(float('%.4g' % gevd_fit_params.scale_lower_ci_width)) +', +'+ str(float('%.4g' % gevd_fit_params.scale_upper_ci_width)) +')'+'\n'+r'$\xi$ = '+str(float('%.4g' % gevd_fit_params.shape_)) + ' (-' +str(float('%.4g' % gevd_fit_params.shape_lower_ci_width)) +', +'+ str(float('%.4g' % gevd_fit_params.shape_upper_ci_width)) +')'
     t_m=ax_model[0,1].text(0.94,0.75,params_text,transform=ax_model[0,1].transAxes, fontsize=csize, va='top', ha='right' )
 
 
@@ -148,21 +177,21 @@ def run_eva(df, tag, block_size=pd.Timedelta(pd.to_timedelta("365.2425D")),
 
     # Plot a table of return values
     summary = eva_model.get_summary(
-        return_period=[2, 5, 10,15,20, 25],
-        alpha=0.5 )
+        return_period=[2, 5, 10,15,20, 25, 50, 100],
+        alpha=0.95 )
     summary=summary.reset_index()
 
     # Format the DF for the table
     summary=summary.round()
     summary=summary.rename(columns={"return period": "period",
                             "return value": "value",
-                            "lower ci": "-50% CI",
-                            "upper ci": "+50% CI"})
+                            "lower ci": "-95% CI",
+                            "upper ci": "+95% CI"})
 
     summary_new=pd.DataFrame({"period":summary['period'],
                               "value":summary['value'],
-                              "-50% CI":summary['value'] - summary['-50% CI'],
-                              "+50% CI":summary['+50% CI'] - summary['value']
+                              "-95% CI":summary['value'] - summary['-95% CI'],
+                              "+95% CI":summary['+95% CI'] - summary['value']
                               })
 
 
