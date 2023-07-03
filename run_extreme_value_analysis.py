@@ -105,11 +105,11 @@ def run_eva(df, tag, block_size=pd.Timedelta(pd.to_timedelta("365.2425D")),
             block_size=eva_model.extremes_kwargs.get("block_size", None), return_period_size='365.2425D' )
     return_period=np.linspace(observed_return_values.loc[:, "return period"].min(),
             observed_return_values.loc[:, "return period"].max(),100,)    
-    modeled_return_values = eva_model.get_summary(return_period=return_period, return_period_size='365.2425D',alpha=0.5)
+    modeled_return_values = eva_model.get_summary(return_period=return_period, return_period_size='365.2425D',alpha=0.95)
 
     ax_model[0,0].plot(observed_return_values['return period'], observed_return_values[tag], linewidth=0.0, marker='^', fillstyle='none', color='black', label='Observations')
     ax_model[0,0].plot(modeled_return_values.index, modeled_return_values['return value'], linewidth=2.0, color='coral', label='Model')
-    ax_model[0,0].fill_between(modeled_return_values.index, modeled_return_values['lower ci'], modeled_return_values['upper ci'], color='grey', alpha=0.5, label='50% CI')
+    ax_model[0,0].fill_between(modeled_return_values.index, modeled_return_values['lower ci'], modeled_return_values['upper ci'], color='grey', alpha=0.5, label='95% CI')
     
     ax_model[0,0].set_xlabel('Return Period (years)', fontsize=csize)
     ax_model[0,0].set_ylabel(str(tag)+' observed at least once\nper return period (nT)', fontsize=csize)
