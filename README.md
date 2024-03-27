@@ -1,4 +1,6 @@
-# run_EVA_generic
+# run_EVA_generic v2.0.0
+[![DOI](https://zenodo.org/badge/657177645.svg)](https://zenodo.org/doi/10.5281/zenodo.10886197)
+
 code to use pyextremes to run extreme value analysis with generic data and create publication quality plots
 
 **License:** CC0-1.0
